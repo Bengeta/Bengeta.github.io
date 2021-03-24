@@ -3,7 +3,7 @@ body {
 }
 
 table, th, td {
-    border: 2px solid #838383;
+    border: 5px solid gray;
     border-collapse: collapse;
 }
 .ya {
@@ -41,14 +41,6 @@ table, th, td {
     width: 400px;
     height: 400px;
 }
-
-.list {
-    display: inline-block;
-    border: 1px solid #000000;
-    padding: 20px;
-    transition: 0.5s;
-}
-
 .memtext  {
     margin: auto;
     text-align: center;
