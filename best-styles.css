@@ -1,0 +1,120 @@
+body {
+    margin: 0;
+}
+
+table, th, td {
+    border: 2px solid #838383;
+    border-collapse: collapse;
+}
+.ya {
+    transition: 0.5s;
+    width: 300px;
+    height: 300px;
+}
+.ya:hover {
+    width: 600px;
+    height: 600px;
+}
+.me {
+    transition: 0.5s;
+    width: 150px;
+    height: 150px;
+}
+#myVideo {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    z-index: -2;
+}
+.vid{
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    background-color: rgba(0, 0, 0,0.5);
+     z-index: -1;
+}
+.me:hover {
+    width: 400px;
+    height: 400px;
+}
+
+.list {
+    display: inline-block;
+    border: 1px solid #000000;
+    padding: 20px;
+    transition: 0.5s;
+}
+
+.memtext  {
+    margin: auto;
+    text-align: center;
+}
+
+.mems:hover {
+    box-shadow: 0 10px 20px 0 rgba(255, 255, 255, 0.2);
+    border-radius: 60px;
+}
+.mempict{
+    width:300px;
+    height:300px;
+    transition: 0.5s;
+}
+.mempict:hover{
+    width:400px;
+    height:400px;
+}
+
+.mtext {
+   /* margin: 60px;*/
+    color: white;
+    font-family: "Inter";
+    margin-left: 30px;
+    margin-top: 90px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.mtext a {
+    padding: 15px;
+}
+
+.rc1 {
+    border-radius: 2005px;
+    margin: 100px;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+.rc {
+    border-radius: 25px;
+    margin: 10px;
+    bottom:300px
+
+}
+
+.menu_bar {
+    font-family: "Inter";
+    display: block;
+    width: 350px;
+}
+.menu_bar li{
+    float: left;
+}
+
+.menu_bar a {
+    display: block;
+    text-decoration: none;
+    padding: 1em;
+    color: orange;
+    background-color: black;
+}
+
+
+
