@@ -134,7 +134,7 @@ class Player extends Object {
             }, false);
         } else {
             if (!this.is_cooldown) {
-                new Bullet(pl_x, pl_y, 1, 1, 5);
+                new Bullet(this.x, this.y, 1, 1, 5);
                 this.is_cooldown = true;
                 setTimeout(() => {
                     this.is_cooldown = false;
@@ -167,7 +167,7 @@ class Space_Shark extends Object {
 
     move() {
         if (this.direction === 1) {
-            if (this.x > -this.width) {
+            if (this.x > -this.width*2) {
                 this.x -= this.speed;
             }
             else{
@@ -269,8 +269,75 @@ class Bullet extends Object {
 
 }
 
+class Boss extends Object{
+    speed = 5;
+    invincible = 0;
+    width = 100;
+    height = 80;
+    x = canvas.width +this.width+5;
+    y = canvas.height /2;
+    cooldown = 100;
+    is_cooldown = false;
+    stable = 0;
+    speed = 2;
+
+    constructor() {
+        super(null);
+        /*this.sprite = new Image();
+        this.sprite.src = "game_img/spaceship.png";*/
+    }
+
+    move(){
+        switch (this.stable) {
+            case 0:
+                if(this.x > canvas.width -this.width-5){
+                    this.x -=2;
+                }
+                else{
+                    this.stable=1;
+                }
+                break;
+            case 1:
+                if(objects.get(0).y<this.y){
+                    this.y -= this.speed;
+                }
+                else if(objects.get(0).y>this.y){
+                    this.y += this.speed;
+                }
+                this.shoot();
+                break;
+            case 2:
+                if(this.x < canvas.width + this.width + 5){
+                    this.x +=2;
+                }
+                else{
+                    this.destroy();
+                }
+        }
+
+    }
+
+    draw(){
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.width, this.width);
+        ctx.fillStyle = "#8b00ff";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    shoot(){
+        if (!this.is_cooldown) {
+            new Bullet(this.x-this.width-1, this.y, 1, 1, -5);
+            this.is_cooldown = true;
+            setTimeout(() => {
+                this.is_cooldown = false;
+            }, this.cooldown)
+        }
+    }
+}
 player = new Player();
 new Space_Shark();
+new Boss();
 for (i = 0; i < kolvo_obstacles; i++) {
     obst = new Obstacle();
 }
