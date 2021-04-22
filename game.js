@@ -144,6 +144,63 @@ class Player extends Object {
     }
 }
 
+class Space_Shark extends Object {
+    width = 200;
+    height = 200;
+    speed = 0;
+    helth = 20;
+    x = canvasW + this.width;
+    y = getRandomFloat(this.height, canvasH - this.height);
+    direction = 1;
+    speed = 12;
+
+    constructor(direction) {
+        super(null);
+        this.direction=direction;
+        if(direction===1){
+
+        }
+        else{
+
+        }
+    }
+
+    move() {
+        if (this.direction === 1) {
+            if (this.x > -this.width) {
+                this.x -= this.speed;
+            }
+            else{
+                this.direction=0;
+                this.y = objects.get(0).y;
+                if(this.y+this.height>canvasH){
+                    this.y=canvasH-this.height;
+                }
+            }
+        }
+        else {
+            if(this.x < canvasW+this.width){
+                this.x+=this.speed;
+            }
+            else{
+                this.direction=1;
+                this.y = objects.get(0).y;
+                if(this.y+this.height>canvasH){
+                    this.y=canvasH-this.height;
+                }
+            }
+
+}
+}
+    draw(){
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, this.width, this.width);
+        ctx.fillStyle = "#ff0000";
+        ctx.fill();
+        ctx.closePath();
+    }
+}
+
 class Obstacle extends Object {
     width = 3;
     height = 3;
@@ -213,6 +270,7 @@ class Bullet extends Object {
 }
 
 player = new Player();
+new Space_Shark();
 for (i = 0; i < kolvo_obstacles; i++) {
     obst = new Obstacle();
 }
