@@ -1,20 +1,31 @@
 var canvas = document.getElementById("my_canvas");
 var ctx = canvas.getContext("2d");
 var keyboard_control = true;
-var kolvo_obstacles =10;
+var kolvo_obstacles = 10;
+var el_id = 0;
 const canvasW = canvas.getBoundingClientRect().width
 const canvasH = canvas.getBoundingClientRect().height
+var objects = new Map();
 var rightPressed = false;
 var leftPressed = false;
 var upPressed = false;
 var downPressed = false;
 
 class Object {
-    constructor(param) {
+    id = 0;
 
+    constructor() {
+        this.id = el_id;
+        el_id++
+        objects.set(this.id, this)
     }
 
     is_dead = false;
+
+    destroy() {
+        this.is_dead = true;
+        objects.delete(this.id);
+    }
 }
 
 class Player extends Object {
@@ -23,7 +34,9 @@ class Player extends Object {
     x = canvas.width / 2;
     y = canvas.height - 30;
     width = 5;
-    height = 5;
+    height = 5
+    cooldown = 1000;
+    is_cooldown = false;
 
     constructor() {
         super(null);
@@ -70,16 +83,16 @@ class Player extends Object {
                 }
             }
 
-            if (rightPressed && this.x+this.width<canvasW) {
+            if (rightPressed && this.x + this.width < canvasW) {
                 this.x += this.speed;
             }
-            if (leftPressed && this.x - this.width >0) {
+            if (leftPressed && this.x - this.width > 0) {
                 this.x -= this.speed;
             }
-            if (upPressed && this.y - this.height >0) {
+            if (upPressed && this.y - this.height > 0) {
                 this.y -= this.speed;
             }
-            if (downPressed && this.y +  this.height <canvasH) {
+            if (downPressed && this.y + this.height < canvasH) {
                 this.y += this.speed;
             }
         } else {
@@ -105,55 +118,118 @@ class Player extends Object {
         ctx.fill();
         ctx.closePath();
     }
-    shoot(){
 
+    shoot() {
+        if (keyboard_control) {
+            document.addEventListener("keydown", (e) => {
+                if (e.key === " ") {
+                    if (!this.is_cooldown) {
+                        new Bullet(this.x, this.y, 1, 1, 5);
+                        this.is_cooldown = true;
+                        setTimeout(() => {
+                            this.is_cooldown = false;
+                        }, this.cooldown)
+                    }
+                }
+            }, false);
+        } else {
+            if (!this.is_cooldown) {
+                new Bullet(pl_x, pl_y, 1, 1, 5);
+                this.is_cooldown = true;
+                setTimeout(() => {
+                    this.is_cooldown = false;
+                }, this.cooldown)
+            }
+        }
     }
 }
-class Obstacle extends Object{
-    width =3;
+
+class Obstacle extends Object {
+    width = 3;
     height = 3;
     speed = 0;
-    x = -this.width-1;
+    x = -this.width - 1;
     y = 0;
+
     constructor() {
         super(null);
     }
-    move(){
-        if(this.x>-this.width){
-            this.x-=this.speed;
-        }
-        else {
-            this.speed = getRandomFloat(1,4);
-            this.x = canvasW+this.width;
-            this.y = getRandomFloat(this.height,canvasH-this.height);
+
+    move() {
+        if (this.x > -this.width) {
+            this.x -= this.speed;
+        } else {
+            this.speed = getRandomFloat(1, 4);
+            this.x = canvasW + this.width;
+            this.y = getRandomFloat(this.height, canvasH - this.height);
         }
     }
-    draw(){
+
+    draw() {
 
         ctx.beginPath();
         ctx.rect(this.x, this.y, 3, 3);
-        ctx.fillStyle = "#0095DD";
+        ctx.fillStyle = "#2090Df";
         ctx.fill();
         ctx.closePath();
     }
 
 }
-player = new Player();
-let obstacles= [kolvo_obstacles];
-for ( i = 0; i < kolvo_obstacles ;i++) {
-    obstacles[i]=new Obstacle();
+
+class Bullet extends Object {
+    x = 0;
+    y = 0;
+    width = 0;
+    height = 0;
+    speed = 0;
+
+    constructor(x, y, width, height, speed) {
+        super(null);
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.speed = speed;
+    }
+
+    move() {
+
+        if (this.x > -this.width || this.x < canvasW + this.width) {
+            this.x += this.speed;
+        } else {
+            this.destroy();
+        }
+
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, 3, 3);
+        ctx.fillStyle = "#red";
+        ctx.fill();
+        ctx.closePath();
+    }
+
 }
+
+player = new Player();
+for (i = 0; i < kolvo_obstacles; i++) {
+    obst = new Obstacle();
+}
+
 function Game_Process() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    player.draw();
-    player.move();
-    for ( i = 0; i < kolvo_obstacles; i++) {
-        obstacles[i].move();
-        obstacles[i].draw();
-    }
+    objects.forEach(d => {
+        d.move();
+        d.draw()
+    });
+    player.shoot();
+
 }
+
 function getRandomFloat(min, max) {
     return Math.random() * (max - min) + min;
 }
+
 Game_Process();
 var interval = setInterval(Game_Process, 16);
