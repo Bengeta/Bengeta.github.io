@@ -1,11 +1,14 @@
 var canvas = document.getElementById("my_canvas");
 var ctx = canvas.getContext("2d");
-var keyboard_control = true;
+var keyboard_control = 0;
 var kolvo_obstacles = 10;
 var el_id = 0;
+var par_of_game=0;
 const canvasW = canvas.getBoundingClientRect().width
 const canvasH = canvas.getBoundingClientRect().height
 var objects = new Map();
+var alive_objects = new Map();
+var ali_obj_id=1;//потому что там уже есть игрок он нулевой
 var rightPressed = false;
 var leftPressed = false;
 var upPressed = false;
@@ -13,24 +16,41 @@ var downPressed = false;
 
 class Object {
     id = 0;
-
+    alive_id=-1;
+    is_dead = false;
     constructor() {
         this.id = el_id;
         el_id++
         objects.set(this.id, this)
     }
-
-    is_dead = false;
+    on_collision(smt){
+        if(this.x < smt.x + smt.width &&
+            this.x + this.width > smt.x &&
+            this.y < smt.y + smt.height &&
+            this.y + this.height > smt.y){
+            return 1;
+        }
+        return 0;
+    }
+    get_damage(damage){
+        this.helth-=damage;
+    }
 
     destroy() {
         this.is_dead = true;
         objects.delete(this.id);
+        if(this.alive_id!==-1){
+            alive_objects.delete(this.alive_id);
+            ali_obj_id--;
+        }
     }
 }
 
 class Player extends Object {
     speed = 5;
+    helth = 200;
     invincible = false;
+    invincible_time = 500;
     x = canvas.width / 2;
     y = canvas.height - 30;
     width = 5;
@@ -42,9 +62,13 @@ class Player extends Object {
         super(null);
         /*this.sprite = new Image();
         this.sprite.src = "game_img/spaceship.png";*/
+        alive_objects.set(this.id,this);
     }
 
     move() {
+        if(this.helth<=0){
+            this.destroy();
+        }
         if (keyboard_control) {
             document.addEventListener("keydown", keyDownHandler, false);
             document.addEventListener("keyup", keyUpHandler, false);
@@ -102,7 +126,7 @@ class Player extends Object {
                 if (relativeX > 0 && relativeX < canvas.width) {
                     this.x = relativeX - this.speed;
                 }
-                if (relativeY > 0 && relativeX < canvasH) {
+                if (relativeY > 0 && relativeY < canvasH) {
                     this.y = relativeY - this.speed;
                 }
             }, false);
@@ -142,20 +166,33 @@ class Player extends Object {
             }
         }
     }
+    get_damage(damage){
+        if(!this.invincible){
+            this.invincible=true;
+            this.helth-=damage;
+            setTimeout(() => {
+                this.invincible = false;
+            }, this.invincible_time)
+        }
+    }
 }
 
 class Space_Shark extends Object {
     width = 200;
     height = 200;
     speed = 0;
-    helth = 20;
+    helth = 2;
     x = canvasW + this.width;
     y = getRandomFloat(this.height, canvasH - this.height);
     direction = 1;
     speed = 12;
+    damage = 20;
 
     constructor(direction) {
         super(null);
+        this.alive_id=ali_obj_id;
+        ali_obj_id++;
+        alive_objects.set(this.alive_id,this);
         this.direction=direction;
         if(direction===1){
 
@@ -166,6 +203,10 @@ class Space_Shark extends Object {
     }
 
     move() {
+        if(this.helth<=0){
+            this.destroy();
+        }
+        this.check_collision();
         if (this.direction === 1) {
             if (this.x > -this.width*2) {
                 this.x -= this.speed;
@@ -199,6 +240,12 @@ class Space_Shark extends Object {
         ctx.fill();
         ctx.closePath();
     }
+    check_collision(){
+        var obj = alive_objects.get(0);
+        if(this.on_collision(obj)){
+            obj.get_damage(this.damage);
+        }
+    }
 }
 
 class Obstacle extends Object {
@@ -207,12 +254,14 @@ class Obstacle extends Object {
     speed = 0;
     x = -this.width - 1;
     y = 0;
+    damage = 2;
 
     constructor() {
         super(null);
     }
 
     move() {
+        this.check_collision();
         if (this.x > -this.width) {
             this.x -= this.speed;
         } else {
@@ -231,6 +280,15 @@ class Obstacle extends Object {
         ctx.closePath();
     }
 
+    check_collision(){
+        var obj = alive_objects.get(0);
+        if(this.on_collision(obj)){
+            obj.get_damage(this.damage);
+            this.destroy();
+        }
+    }
+
+
 }
 
 class Bullet extends Object {
@@ -239,8 +297,9 @@ class Bullet extends Object {
     width = 0;
     height = 0;
     speed = 0;
+    damage =20;
 
-    constructor(x, y, width, height, speed) {
+    constructor(x, y, width, height, speed,damage) {
         super(null);
         this.x = x;
         this.y = y;
@@ -250,7 +309,7 @@ class Bullet extends Object {
     }
 
     move() {
-
+        this.check_collision();
         if (this.x > -this.width || this.x < canvasW + this.width) {
             this.x += this.speed;
         } else {
@@ -266,6 +325,17 @@ class Bullet extends Object {
         ctx.fill();
         ctx.closePath();
     }
+    check_collision(){
+        var obj;
+        for (let i = 0; i < alive_objects.size ; i++) {
+            obj = alive_objects.get(i);
+            if(this.on_collision(obj)){
+                obj.get_damage(this.damage);
+                this.destroy();
+            }
+
+        }
+    }
 
 }
 
@@ -280,9 +350,13 @@ class Boss extends Object{
     is_cooldown = false;
     stable = 0;
     speed = 2;
+    helth =0;
 
     constructor() {
         super(null);
+        this.alive_id=ali_obj_id;
+        ali_obj_id++;
+        alive_objects.set(this.alive_id,this);
         /*this.sprite = new Image();
         this.sprite.src = "game_img/spaceship.png";*/
     }
@@ -305,6 +379,9 @@ class Boss extends Object{
                     this.y += this.speed;
                 }
                 this.shoot();
+                if(this.helth<=0){
+                    this.stable=2;
+                }
                 break;
             case 2:
                 if(this.x < canvas.width + this.width + 5){
