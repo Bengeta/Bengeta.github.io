@@ -1,7 +1,7 @@
 body {
     margin: 0;
 }
-canvas { background: #eee; }
+canvas { background: #000000; }
 table, th, td {
     border: 5px solid gray;
     border-collapse: collapse;

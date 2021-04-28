@@ -21,7 +21,7 @@ class Object {
     id = 0;
     alive_id = -1;
     is_dead = false;
-
+    spr;
     constructor() {
         this.id = el_id;
         el_id++
@@ -37,6 +37,9 @@ class Object {
 
     get_damage(damage) {
         this.helth -= damage;
+    }
+    draw() {
+        ctx.drawImage(this.sprite, this.x, this.y, this.width, this.height);
     }
 
     destroy() {
@@ -55,16 +58,16 @@ class Player extends Object {
     invincible = false;
     invincible_time = 500;
     x = canvas.width / 2;
-    y = canvas.height - 30;
-    width = 5;
-    height = 5
+    y = canvas.height /2;
+    width = 160;
+    height = 50
     cooldown = 1000;
     is_cooldown = false;
 
     constructor() {
         super(null);
-        /*this.sprite = new Image();
-        this.sprite.src = "game_img/spaceship.png";*/
+        this.sprite = new Image();
+        this.sprite.src = "player.png";
         alive_objects.set(this.id, this);
     }
 
@@ -74,6 +77,7 @@ class Player extends Object {
             par_of_game=2;
             destroy_all();
         }
+        this.shoot();
         if (keyboard_control) {
             document.addEventListener("keydown", keyDownHandler, false);
             document.addEventListener("keyup", keyUpHandler, false);
@@ -112,16 +116,16 @@ class Player extends Object {
                 }
             }
 
-            if (rightPressed && this.x + this.width < canvasW) {
+            if (rightPressed && this.x + this.width <= canvasW) {
                 this.x += this.speed;
             }
-            if (leftPressed && this.x - this.width > 0) {
+            if (leftPressed && this.x > 0) {
                 this.x -= this.speed;
             }
-            if (upPressed && this.y - this.height > 0) {
+            if (upPressed && this.y  >= 0) {
                 this.y -= this.speed;
             }
-            if (downPressed && this.y + this.height < canvasH) {
+            if (downPressed && (this.y + this.height <= canvasH)) {
                 this.y += this.speed;
             }
         } else {
@@ -139,20 +143,14 @@ class Player extends Object {
         }
     }
 
-    draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = "#0095DD";
-        ctx.fill();
-        ctx.closePath();
-    }
+
 
     shoot() {
         if (keyboard_control) {
             document.addEventListener("keydown", (e) => {
                 if (e.key === " ") {
                     if (!this.is_cooldown) {
-                        new Bullet(this.x, this.y, 1, 1, 5);
+                        new Bullet(this.x+this.width+50, this.y, 40, 10, 5);
                         this.is_cooldown = true;
                         setTimeout(() => {
                             this.is_cooldown = false;
@@ -183,13 +181,13 @@ class Player extends Object {
 }
 
 class Space_Shark extends Object {
-    width = 200;
+    width = 400;
     height = 200;
     speed = 0;
     helth = 2;
     x = canvasW + this.width;
     y = getRandomFloat(this.height, canvasH - this.height);
-    direction = 1;
+    direction = score%2;
     speed = 12;
     damage = 20;
     reward=1000;
@@ -200,11 +198,8 @@ class Space_Shark extends Object {
         ali_obj_id++;
         alive_objects.set(this.alive_id, this);
         this.direction = direction;
-        if (direction === 1) {
-
-        } else {
-
-        }
+        this.sprite = new Image();
+        this.sprite.src = "Shark_dir0.png";
     }
 
     move() {
@@ -220,6 +215,7 @@ class Space_Shark extends Object {
             } else {
                 this.direction = 0;
                 this.y = objects.get(0).y;
+                this.sprite.src = "Shark_dir1.png";
                 if (this.y + this.height > canvasH) {
                     this.y = canvasH - this.height;
                 }
@@ -229,21 +225,14 @@ class Space_Shark extends Object {
                 this.x += this.speed;
             } else {
                 this.direction = 1;
-                this.y = objects.get(0).y;
+                this.y = objects.get(0).y-100;
+                this.sprite.src = "Shark_dir0.png";
                 if (this.y + this.height > canvasH) {
                     this.y = canvasH - this.height;
                 }
             }
 
         }
-    }
-
-    draw() {
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, this.width, this.width);
-        ctx.fillStyle = "#ff0000";
-        ctx.fill();
-        ctx.closePath();
     }
 
     check_collision() {
@@ -255,8 +244,8 @@ class Space_Shark extends Object {
 }
 
 class Obstacle extends Object {
-    width = 3;
-    height = 3;
+    width = 20;
+    height = 20;
     speed = 0;
     x = -this.width - 1;
     y = 0;
@@ -264,6 +253,8 @@ class Obstacle extends Object {
 
     constructor() {
         super(null);
+        this.sprite = new Image();
+        this.sprite.src = "астеройд.png";
     }
 
     move() {
@@ -277,19 +268,11 @@ class Obstacle extends Object {
         }
     }
 
-    draw() {
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, 3, 3);
-        ctx.fillStyle = "#2090Df";
-        ctx.fill();
-        ctx.closePath();
-    }
 
     check_collision() {
         var obj = alive_objects.get(0);
         if (this.on_collision(obj)) {
             obj.get_damage(this.damage);
-            this.destroy();
         }
     }
 
@@ -299,8 +282,8 @@ class Obstacle extends Object {
 class Bullet extends Object {
     x = 0;
     y = 0;
-    width = 0;
-    height = 0;
+    width = 25;
+    height = 20;
     speed = 0;
     damage = 20;
 
@@ -311,6 +294,8 @@ class Bullet extends Object {
         this.width = width;
         this.height = height;
         this.speed = speed;
+        this.sprite = new Image();
+        this.sprite.src = "Blaster.png";
     }
 
     move() {
@@ -323,13 +308,6 @@ class Bullet extends Object {
 
     }
 
-    draw() {
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, 3, 3);
-        ctx.fillStyle = "#red";
-        ctx.fill();
-        ctx.closePath();
-    }
 
     check_collision() {
         var obj;
@@ -348,23 +326,23 @@ class Bullet extends Object {
 class Boss extends Object {
     speed = 5;
     invincible = 0;
-    width = 100;
-    height = 80;
+    width = 500;
+    height = 300;
     x = canvas.width + this.width + 5;
     y = canvas.height / 2;
     cooldown = 100;
     is_cooldown = false;
     stable = 0;
     speed = 2;
-    helth = 0;
+    helth = 10000;
     reward=100000;
     constructor() {
         super(null);
         this.alive_id = ali_obj_id;
         ali_obj_id++;
         alive_objects.set(this.alive_id, this);
-        /*this.sprite = new Image();
-        this.sprite.src = "game_img/spaceship.png";*/
+        this.sprite = new Image();
+        this.sprite.src = "enemy.png";
     }
 
     move() {
@@ -399,17 +377,9 @@ class Boss extends Object {
 
     }
 
-    draw() {
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, this.width, this.width);
-        ctx.fillStyle = "#8b00ff";
-        ctx.fill();
-        ctx.closePath();
-    }
-
     shoot() {
         if (!this.is_cooldown) {
-            new Bullet(this.x - this.width - 1, this.y, 1, 1, -5);
+            new Bullet(this.x-80, this.y+this.height/2, 30, 10, -5);
             this.is_cooldown = true;
             setTimeout(() => {
                 this.is_cooldown = false;
@@ -440,8 +410,9 @@ class Button extends Object{
 
     draw() {
         ctx.beginPath();
+        ctx.fillStyle="#ffffff";
         ctx.font = "16px Arial";
-        ctx.strokeStyle = "#000000";
+        ctx.strokeStyle = "#ffffff";
         ctx.strokeRect(this.x, this.y, this.width, this.height);
         ctx.fillText(this.text, this.x + ctx.measureText(this.text.length).width * 2, this.y + (this.height * (1.8 / 3)), this.width * (2 / 3))
         ctx.closePath();
@@ -506,7 +477,6 @@ function game(){
         d.move();
         d.draw()
     });
-    //objects.get(0).shoot();
     if (!scr_is_cooldown) {
         scr_is_cooldown = true;
         score += 10;
@@ -549,7 +519,7 @@ function destroy_all() {
 
 function drawScore() {
     ctx.font = "16px Arial";
-    ctx.fillStyle = "#000000";
+    ctx.fillStyle = "#ffffff";
     if (par_of_game === 1) {
         ctx.fillText("Score:" + score, canvasW * (1 / 2), 20, canvasW / 3);
     } else {
@@ -564,7 +534,5 @@ function create_startguys(){
         new Obstacle();
     }
 }
-
-Game_Process();
 
 var interval = setInterval(Game_Process, 16);
