@@ -57,7 +57,7 @@ class Object {
 
 class Player extends Object {
     speed = 5;
-    speed_diag=0;
+    speed_diag = 0;
     health = 200;
     invincible = false;
     invincible_time = 500;
@@ -67,53 +67,66 @@ class Player extends Object {
     height = 50
     cooldown = 1000;
     is_cooldown = false;
-    x1=0;
-    y1=0;//для управления на мобилках
-    x2=0;
-    y2=0;
-    path =0 ;
+    x1 = 0;
+    y1 = 0;//для управления на мобилках
+    x2 = 0;
+    y2 = 0;
+    path = 0;
 
     constructor() {
         super(null);
         this.sprite = new Image();
         this.sprite.src = "player.png";
-        this.y2=this.y;
-        this.x2=this.x;
+        this.y2 = this.y;
+        this.x2 = this.x;
         alive_objects.set(this.id, this);
         if (keyboard_control) {
-            document.addEventListener("keydown", (e)=>{if (e.key === "Down" || e.key === "ArrowDown") {
-                downPressed = true;
-            } else if (e.key === "Up" || e.key === "ArrowUp") {
-                upPressed = true;
-            }}, false);
-            document.addEventListener("keyup", (e)=>{if (e.key === "Up" || e.key === "ArrowUp") {
-                upPressed = false;
-            } else if (e.key === "Down" || e.key === "ArrowDown") {
-                downPressed = false;
-            }}, false);
-            document.addEventListener("keydown", (e)=>{if (e.key === "Left" || e.key === "ArrowLeft") {
-                leftPressed = true;
-            } else if (e.key === "Right" || e.key === "ArrowRight") {
-                rightPressed = true;
-            }}, false);
-            document.addEventListener("keyup", (e)=>{if (e.key === "Right" || e.key === "ArrowRight") {
-                rightPressed = false;
-            } else if (e.key === "Left" || e.key === "ArrowLeft") {
-                leftPressed = false;
-            }}, false);
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Down" || e.key === "ArrowDown") {
+                    downPressed = true;
+                } else if (e.key === "Up" || e.key === "ArrowUp") {
+                    upPressed = true;
+                }
+                if (e.key === " ") {
+                    if (!this.is_cooldown) {
+                        new Bullet(this.x + this.width + 5, this.y, 30, 5, this.speed + 5);
+                        this.is_cooldown = true;
+                        setTimeout(() => {
+                            this.is_cooldown = false;
+                        }, this.cooldown)
+                    }
+                }
+                if (e.key === "Left" || e.key === "ArrowLeft") {
+                    leftPressed = true;
+                } else if (e.key === "Right" || e.key === "ArrowRight") {
+                    rightPressed = true;
+                }
+            }, false);
+            document.addEventListener("keyup", (e) => {
+                if (e.key === "Up" || e.key === "ArrowUp") {
+                    upPressed = false;
+                } else if (e.key === "Down" || e.key === "ArrowDown") {
+                    downPressed = false;
+                }
+                if (e.key === "Right" || e.key === "ArrowRight") {
+                    rightPressed = false;
+                } else if (e.key === "Left" || e.key === "ArrowLeft") {
+                    leftPressed = false;
+                }
+            }, false);
+        } else {
+            if (par_of_game === 1) {
+                document.addEventListener("click", (e) => {
+                    this.x1 = this.x;
+                    this.y1 = this.y;
+                    this.x2 = e.offsetX - this.width / 2;
+                    this.y2 = e.offsetY - this.height / 2;
+                    var dist = Math.abs(Math.sqrt((this.x2 - this.x1) * (this.x2 - this.x1) + (this.y2 - this.y1) * (this.y2 - this.y1)));
+                    this.speed_diag = this.speed / dist;
+                    this.path = 0;
+                }, false);
+            }
         }
-        else{
-            if(par_of_game===1){
-                    document.addEventListener("click", (e) => {
-                        this.x1=this.x;
-                        this.y1=this.y;
-                        this.x2 = e.offsetX - this.width / 2;
-                        this.y2 = e.offsetY - this.height / 2;
-                        var dist = Math.abs(Math.sqrt((this.x2 - this.x1) * (this.x2 - this.x1) + (this.y2 - this.y1) * (this.y2 - this.y1)));
-                        this.speed_diag = this.speed / dist;
-                        this.path = 0;
-                    }, false);
-        }}
     }
 
     move() {
@@ -138,7 +151,7 @@ class Player extends Object {
                 this.y += this.speed;
             }
         } else {
-            if(Math.abs(this.x2 - this.x) > this.speed || Math.abs(this.y2 - this.y) > this.speed) {
+            if (Math.abs(this.x2 - this.x) > this.speed || Math.abs(this.y2 - this.y) > this.speed) {
                 this.path += this.speed_diag;
                 this.x = this.x1 + (this.x2 - this.x1) * this.path;
                 this.y = this.y1 + (this.y2 - this.y1) * this.path;
@@ -148,21 +161,9 @@ class Player extends Object {
 
 
     shoot() {
-        if (keyboard_control) {
-            document.addEventListener("keydown", (e) => {
-                if (e.key === " ") {
-                    if (!this.is_cooldown) {
-                        new Bullet(this.x + this.width +5 , this.y, 30, 5, this.speed+5);
-                        this.is_cooldown = true;
-                        setTimeout(() => {
-                            this.is_cooldown = false;
-                        }, this.cooldown)
-                    }
-                }
-            }, false);
-        } else {
+         if(!keyboard_control) {
             if (!this.is_cooldown) {
-                new Bullet(this.x + this.width + 5, this.y, 30, 5, this.speed+5);
+                new Bullet(this.x + this.width + 5, this.y, 30, 5, this.speed + 5);
                 this.is_cooldown = true;
                 setTimeout(() => {
                     this.is_cooldown = false;
@@ -182,12 +183,13 @@ class Player extends Object {
             }, this.invincible_time)
         }
     }
-hp_Show() {
+
+    hp_Show() {
         ctx.beginPath();
-         ctx.rect(10, 10, this.health, 20);
-         ctx.fillStyle = "green";
-         ctx.fill();
-         ctx.closePath();
+        ctx.rect(10, 10, this.health, 20);
+        ctx.fillStyle = "green";
+        ctx.fill();
+        ctx.closePath();
     }
 }
 
@@ -195,13 +197,14 @@ class Space_Shark extends Object {
     width = 400;
     height = 200;
     speed = 0;
-    helth = 2;
+    helth = 20;
     x = canvasW + this.width;
     y = getRandomFloat(this.height, canvasH - this.height);
     direction = score % 2;
     speed = 12;
     damage = 20;
     reward = 1000;
+    alpha_minus = 0;
 
     constructor(direction) {
         super(null);
@@ -214,35 +217,33 @@ class Space_Shark extends Object {
     }
 
     move() {
-        if (this.helth <= 0) {
-            this.destroy();
-            state_enemy = 0;
-            score += this.reward;
-        }
-        this.check_collision();
-        if (this.direction === 1) {
-            if (this.x > -this.width * 2) {
-                this.x -= this.speed;
-            } else {
-                this.direction = 0;
-                this.y = objects.get(0).y;
-                this.sprite.src = "Shark_dir1.png";
-                if (this.y + this.height > canvasH) {
-                    this.y = canvasH - this.height;
-                }
-            }
-        } else {
-            if (this.x < canvasW + this.width) {
-                this.x += this.speed;
-            } else {
-                this.direction = 1;
-                this.y = objects.get(0).y - 100;
-                this.sprite.src = "Shark_dir0.png";
-                if (this.y + this.height > canvasH) {
-                    this.y = canvasH - this.height;
-                }
-            }
+        if (this.helth > 0) {
 
+            this.check_collision();
+            if (this.direction === 1) {
+                if (this.x > -this.width * 2) {
+                    this.x -= this.speed;
+                } else {
+                    this.direction = 0;
+                    this.y = objects.get(0).y;
+                    this.sprite.src = "Shark_dir1.png";
+                    if (this.y + this.height > canvasH) {
+                        this.y = canvasH - this.height;
+                    }
+                }
+            } else {
+                if (this.x < canvasW + this.width) {
+                    this.x += this.speed;
+                } else {
+                    this.direction = 1;
+                    this.y = objects.get(0).y - 100;
+                    this.sprite.src = "Shark_dir0.png";
+                    if (this.y + this.height > canvasH) {
+                        this.y = canvasH - this.height;
+                    }
+                }
+
+            }
         }
     }
 
@@ -250,6 +251,23 @@ class Space_Shark extends Object {
         var obj = alive_objects.get(0);
         if (this.on_collision(obj)) {
             obj.get_damage(this.damage);
+        }
+    }
+
+    draw() {
+        if (this.helth > 0) {
+            ctx.drawImage(this.sprite, this.x, this.y, this.width, this.height);
+        } else {
+            if (this.alpha_minus <= 0.90) {
+                this.alpha_minus += 0.03;
+                ctx.globalAlpha -= this.alpha_minus;
+                ctx.drawImage(this.sprite, this.x, this.y, this.width, this.height);
+                ctx.globalAlpha = 1;
+            } else {
+                this.destroy();
+                state_enemy = 0;
+                score += this.reward;
+            }
         }
     }
 }
@@ -348,7 +366,8 @@ class Boss extends Object {
     speed = 2;
     helth = 10000;
     reward = 100000;
-    player =0;
+    player = 0;
+
     constructor() {
         super(null);
         this.alive_id = ali_obj_id;
@@ -356,7 +375,7 @@ class Boss extends Object {
         alive_objects.set(this.alive_id, this);
         this.sprite = new Image();
         this.sprite.src = "enemy.png";
-        this.player=objects.get(0);
+        this.player = objects.get(0);
     }
 
     move() {
@@ -370,7 +389,7 @@ class Boss extends Object {
                 }
                 break;
             case 1:
-                if(!this.check_y()) {
+                if (!this.check_y()) {
                     if (this.player.y < this.y) {
                         this.y -= this.speed;
                     } else if (this.player.y > this.y) {
@@ -403,9 +422,10 @@ class Boss extends Object {
             }, this.cooldown)
         }
     }
-    check_y(){
-        return ((this.player.y>=this.y)&&(this.player.y<=this.y+this.height))
-            ||((this.player.y+this.player.height<=this.y)&&(this.player.y+this.player.height>=this.y+this.height))
+
+    check_y() {
+        return ((this.player.y >= this.y) && (this.player.y <= this.y + this.height))
+            || ((this.player.y + this.player.height <= this.y) && (this.player.y + this.player.height >= this.y + this.height))
     }
 }
 
@@ -425,8 +445,9 @@ class Button extends Object {
         this.height = h;
         this.draw();
         canvas.addEventListener('click', (e) => {
-            if(this.is_in(this.x,this.y,this.width,this.height,e.offsetX,e.offsetY)){
-            clicked();}
+            if (this.is_in(this.x, this.y, this.width, this.height, e.offsetX, e.offsetY)) {
+                clicked();
+            }
         })
     }
 
@@ -535,7 +556,7 @@ function game() {
         }, scr_cooldown)
     }
 
-    if (state_enemy === 0 && score % 500 === 0) {
+    if (state_enemy === 0 && score % 5 === 0) {
         new Space_Shark();
         state_enemy = 1;
     }
