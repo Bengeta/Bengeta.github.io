@@ -38,7 +38,7 @@ class Object {
     }
 
     get_damage(damage) {
-        this.helth -= damage;
+        this.health -= damage;
     }
 
     draw() {
@@ -58,7 +58,7 @@ class Object {
 class Player extends Object {
     speed = 10;
     speed_diag = 0;
-    max_helth=200;
+    max_health=200;
     health = 200;
     invincible = false;
     invincible_time = 1000;
@@ -198,7 +198,7 @@ class Enemy extends Object {
     width = 400;
     height = 200;
     speed = 0;
-    helth = 150;
+    health = 150;
     x = canvasW + this.width;
     y = getRandomFloat(this.height, canvasH - this.height);
     direction = Math.round(getRandomFloat(0,1));
@@ -218,7 +218,7 @@ class Enemy extends Object {
     }
 
     move() {
-        if (this.helth > 0) {
+        if (this.health > 0) {
 
             this.check_collision();
             if (this.direction === 1) {
@@ -256,7 +256,7 @@ class Enemy extends Object {
     }
 
     draw() {
-        if (this.helth > 0) {
+        if (this.health > 0) {
             ctx.drawImage(this.sprite, this.x, this.y, this.width, this.height);
         } else {
             if (this.alpha_minus <= 0.90) {
@@ -268,7 +268,7 @@ class Enemy extends Object {
                 this.destroy();
                 state_enemy = 0;
                 score += this.reward;
-                this.player.helth+=50;
+                this.player.health+=50;
                 if(getRandomFloat(1,3)>2){
                     new Boss();
                     state_enemy = 2;
@@ -371,7 +371,7 @@ class Boss extends Object {
     is_cooldown = false;
     stable = 0;
     speed = 2;
-    helth = 600;
+    health = 600;
     reward = 100000;
     player = 0;
 
@@ -390,7 +390,7 @@ class Boss extends Object {
             case 0:
                 if (this.x > canvas.width - this.width - 5) {
                     this.x -= 2;
-                    this.helth = this.max_h;
+                    this.health = this.max_h;
                 } else {
                     this.stable = 1;
                 }
@@ -407,7 +407,7 @@ class Boss extends Object {
                     this.shoot(1);
                 }
                 else{this.shoot(2)}
-                if (this.helth <= 0) {
+                if (this.health <= 0) {
                     this.stable = 2;
                 }
                 break;
@@ -418,7 +418,7 @@ class Boss extends Object {
                     this.destroy();
                     state_enemy = 0;
                     score += this.reward;
-                    this.player.helth=this.player.max_helth;
+                    this.player.health=this.player.max_health;
                 }
         }
 
@@ -434,15 +434,18 @@ class Boss extends Object {
             var damage =20;
         }
         else{
-            var width = 60;
+            var width = 100;
             var height = this.height;
             var speed=-2;
             var b =this.height;
             this.cooldown=1200;
-            var damage = 15
+            var damage = 15;
         }
         if (!this.is_cooldown) {
-            new Bullet(this.x - 100, this.y + this.height / b, width, height, -5,damage);
+            var b= new Bullet(this.x - 100, this.y + this.height / b, width, height, -5,damage);
+            if(a!==1){
+                b.sprite.src="Boss_Bullet.png"
+            }
             this.is_cooldown = true;
             setTimeout(() => {
                 this.is_cooldown = false;
@@ -580,13 +583,15 @@ function game() {
     });
         score += 10;
 
-   /* if (state_enemy === 0 && score % 700 <300 && score >700) {
-        new Boss();
-        state_enemy = 2;
-    }*/
-    if (state_enemy === 0 && score % 500 === 0 ) {
+   /* if (state_enemy === 0 && score % 700 <300 &&
         new Enemy();
-        state_enemy = 1;
+        state_enemy = 1;score >700) {
+    new Boss();
+    state_enemy = 2;
+}*/
+if (state_enemy === 0 && score % 500 === 0 ) {
+    new Enemy();
+    state_enemy = 1;
     }
 
 
