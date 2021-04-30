@@ -632,7 +632,6 @@ function create_startguys() {
     for (i = 0; i < kolvo_stars; i++) {
         new Star();
     }
-    new Boss();
 }
 
 
