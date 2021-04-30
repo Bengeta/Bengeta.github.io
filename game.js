@@ -56,16 +56,17 @@ class Object {
 }
 
 class Player extends Object {
-    speed = 5;
+    speed = 10;
     speed_diag = 0;
+    max_helth=200;
     health = 200;
     invincible = false;
-    invincible_time = 500;
+    invincible_time = 1000;
     x = canvas.width / 2;
     y = canvas.height / 2;
     width = 160;
     height = 50
-    cooldown = 1000;
+    cooldown = 600;
     is_cooldown = false;
     x1 = 0;
     y1 = 0;//для управления на мобилках
@@ -89,7 +90,7 @@ class Player extends Object {
                 }
                 if (e.key === " ") {
                     if (!this.is_cooldown) {
-                        new Bullet(this.x + this.width + 5, this.y, 30, 5, this.speed + 5);
+                        new Bullet(this.x + this.width + 10, this.y, 30, 5, this.speed + 5,50);
                         this.is_cooldown = true;
                         setTimeout(() => {
                             this.is_cooldown = false;
@@ -163,7 +164,7 @@ class Player extends Object {
     shoot() {
          if(!keyboard_control) {
             if (!this.is_cooldown) {
-                new Bullet(this.x + this.width + 5, this.y, 30, 5, this.speed + 5);
+                new Bullet(this.x + this.width + 10, this.y, 30, 5, this.speed + 5,50);
                 this.is_cooldown = true;
                 setTimeout(() => {
                     this.is_cooldown = false;
@@ -193,25 +194,25 @@ class Player extends Object {
     }
 }
 
-class Space_Shark extends Object {
+class Enemy extends Object {
     width = 400;
     height = 200;
     speed = 0;
-    helth = 20;
+    helth = 150;
     x = canvasW + this.width;
     y = getRandomFloat(this.height, canvasH - this.height);
-    direction = score % 2;
+    direction = Math.round(getRandomFloat(0,1));
     speed = 12;
     damage = 20;
     reward = 1000;
     alpha_minus = 0;
+    player=objects.get(0);
 
-    constructor(direction) {
+    constructor() {
         super(null);
         this.alive_id = ali_obj_id;
         ali_obj_id++;
         alive_objects.set(this.alive_id, this);
-        this.direction = direction;
         this.sprite = new Image();
         this.sprite.src = "Shark_dir0.png";
     }
@@ -267,6 +268,11 @@ class Space_Shark extends Object {
                 this.destroy();
                 state_enemy = 0;
                 score += this.reward;
+                this.player.helth+=50;
+                if(getRandomFloat(1,3)>2){
+                    new Boss();
+                    state_enemy = 2;
+                }
             }
         }
     }
@@ -323,6 +329,7 @@ class Bullet extends Object {
         this.width = width;
         this.height = height;
         this.speed = speed;
+        this.damage=damage;
         this.sprite = new Image();
         this.sprite.src = "Blaster.png";
     }
@@ -353,18 +360,18 @@ class Bullet extends Object {
 }
 
 class Boss extends Object {
-    speed = 5;
+    speed = 3;
     invincible = 0;
     width = 500;
-    max_h = 300;
+    max_h = 600;
     height = 300;
     x = canvas.width + this.width + 5;
     y = canvas.height / 2;
-    cooldown = 100;
+    cooldown = 300;
     is_cooldown = false;
     stable = 0;
     speed = 2;
-    helth = 10000;
+    helth = 600;
     reward = 100000;
     player = 0;
 
@@ -389,14 +396,17 @@ class Boss extends Object {
                 }
                 break;
             case 1:
-                if (!this.check_y()) {
-                    if (this.player.y < this.y) {
+                if(Math.abs(this.player.y - this.y-this.height/2)>this.speed) {
+                    if ((this.player.y < this.y + this.height / 2) && (this.y >= 0)) {
                         this.y -= this.speed;
-                    } else if (this.player.y > this.y) {
+                    } else if ((this.player.y > this.y + this.height / 2) && (this.y + this.height <= canvasH)) {
                         this.y += this.speed;
                     }
                 }
-                this.shoot();
+                if (!this.check_y()) {
+                    this.shoot(1);
+                }
+                else{this.shoot(2)}
                 if (this.helth <= 0) {
                     this.stable = 2;
                 }
@@ -408,24 +418,44 @@ class Boss extends Object {
                     this.destroy();
                     state_enemy = 0;
                     score += this.reward;
+                    this.player.helth=this.player.max_helth;
                 }
         }
 
     }
 
-    shoot() {
+    shoot(a) {
+        if(a===1){
+            var width = 30;
+            var height = 10;
+            var speed=-5;
+            var b =2;
+            this.cooldown=500
+            var damage =20;
+        }
+        else{
+            var width = 60;
+            var height = this.height;
+            var speed=-2;
+            var b =this.height;
+            this.cooldown=1200;
+            var damage = 15
+        }
         if (!this.is_cooldown) {
-            new Bullet(this.x - 80, this.y + this.height / 2, 30, 10, -5);
+            new Bullet(this.x - 100, this.y + this.height / b, width, height, -5,damage);
             this.is_cooldown = true;
             setTimeout(() => {
                 this.is_cooldown = false;
             }, this.cooldown)
         }
     }
-
+    check_collision() {
+        if (this.on_collision(this.player)) {
+            this.player.get_damage(20);
+        }
+    }
     check_y() {
-        return ((this.player.y >= this.y) && (this.player.y <= this.y + this.height))
-            || ((this.player.y + this.player.height <= this.y) && (this.player.y + this.player.height >= this.y + this.height))
+        return (this.y<this.speed)||(canvasH-this.y-this.height<this.speed)
     }
 }
 
@@ -548,22 +578,17 @@ function game() {
         d.move();
         d.draw()
     });
-    if (!scr_is_cooldown) {
-        scr_is_cooldown = true;
         score += 10;
-        setTimeout(() => {
-            scr_is_cooldown = false;
-        }, scr_cooldown)
-    }
 
-    if (state_enemy === 0 && score % 5 === 0) {
-        new Space_Shark();
-        state_enemy = 1;
-    }
-    if (state_enemy === 0 && score % 10 === 0) {
+   /* if (state_enemy === 0 && score % 700 <300 && score >700) {
         new Boss();
         state_enemy = 2;
+    }*/
+    if (state_enemy === 0 && score % 500 === 0 ) {
+        new Enemy();
+        state_enemy = 1;
     }
+
 
 }
 
@@ -607,6 +632,7 @@ function create_startguys() {
     for (i = 0; i < kolvo_stars; i++) {
         new Star();
     }
+    new Boss();
 }
 
 
